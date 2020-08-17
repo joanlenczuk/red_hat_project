@@ -17,6 +17,8 @@ from category_encoders import TargetEncoder
 
 
 
+#### IMPORTING FILES
+
 def create_dir(dirname):
     """
     The function takes in the path of a desired directory.
@@ -43,6 +45,8 @@ train_activity = import_csv('act_train.csv')
 people = import_csv('people.csv')
 
 
+
+#### DATA CLEANING
 
 def _process_date(dataframe, date_col):
     """
@@ -164,7 +168,7 @@ del train_activity_df
 
 
 
-####CORRELATION
+#### FEATURE SELECTION
 
 index_cols = ['activity_id_prefix', 'activity_id']
 cat_cols = ['char_10_act' , 'group_1']
@@ -591,6 +595,8 @@ def evaluate_cmatrix(y, y_pred, thresh = 0.5):
 
 
 
+#### FINDING BEST PARAMS
+
 scoring = 'f1'
 
 def rf_best_params(X, y, random_seed, scoring,
@@ -652,13 +658,6 @@ if best_score2 > best_score:
 
 
 
-del best_score1
-del best_score2
-del best_params1
-del best_params2
-
-
-
 ## training the final model with the best params
 rf_final = RandomForestClassifier(**best_params)
 rf_final.fit(X_train_t, y_train)
@@ -674,12 +673,14 @@ cm_test = evaluate_cmatrix(y_test, y_test_pred)
 
 
 
-# saving the best parameters and model
+#### SAVING MODEL AND BEST PARAMS
+
 with open('./model/best_params_dict.pickle', 'wb') as handle:
     pickle.dump(best_params, handle, protocol = pickle.HIGHEST_PROTOCOL)
 
 pickle.dump(rf_final, open('./model/best_model_rf.sav', 'wb'))
 
+## printing the results of the model (metrics and confusion matrix)
 print(metrics_train)
 print(metrics_test)
 print(cm_train)
