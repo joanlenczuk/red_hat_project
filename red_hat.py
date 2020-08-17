@@ -18,6 +18,8 @@ from catboost import CatBoostClassifier
 from scipy.stats import chi2_contingency, pointbiserialr
 from category_encoders import TargetEncoder
 
+
+
 def create_dir(dirname):
     """
     The function takes in the path of a desired directory.
@@ -525,6 +527,8 @@ del X_test
 y_train = y_train.astype('int')
 y_test = y_test.astype('int')
 
+
+
 #### MODELLING
 
 #specifying the random seed to enable reproducibility of the predictions
@@ -588,6 +592,8 @@ def evaluate_cmatrix(y, y_pred, thresh = 0.5):
     
     return cmatrix
 
+
+
 scoring = 'f1'
 
 def rf_best_params(X, y, random_seed, scoring,
@@ -608,6 +614,8 @@ def rf_best_params(X, y, random_seed, scoring,
     
     return rf_rsearch.best_params_, rf_rsearch.best_score_
 
+
+
 ## first iteration
 max_features = ['auto','log2']
 max_depth = range(20, 26, 2)
@@ -617,11 +625,13 @@ n_estimators = [100]
 
 best_params, best_score = rf_best_params(X_train_t, y_train, random_seed, scoring, max_features, max_depth, min_samples_split, min_samples_leaf, n_estimators)
 
+
+
 ## second iteration
 max_features = [best_params['max_features']]
-max_depth = [best_params['max_depth']-1, best_params['max_depth'], best_params['max_depth']+1]
-min_samples_split = [best_params['min_samples_split']-1, best_params['min_samples_split'], best_params['min_samples_split']+1]
-min_samples_leaf = [best_params['min_samples_leaf']-1, best_params['min_samples_leaf'], best_params['min_samples_leaf']+1]
+max_depth = range(best_params['max_depth']-1, best_params['max_depth']+3)
+min_samples_split = range(best_params['min_samples_split']-1, best_params['min_samples_split']+2)
+min_samples_leaf = range(best_params['min_samples_leaf']-2, best_params['min_samples_leaf']+2)
 n_estimators = [best_params['n_estimators']]
 
 best_params1, best_score1 = rf_best_params(X_train_t, y_train, random_seed, scoring, max_features, max_depth, min_samples_split, min_samples_leaf, n_estimators)
@@ -630,11 +640,13 @@ if best_score1 > best_score:
     best_score = best_score1
     best_params = best_params1
 
+
+
 #third iteration
 rf = RandomForestClassifier(random_state = random_seed, n_estimators = 200)
 
 ##calculating mean cross-validated score of the estimator to later compare it to the scores after hyperparameter tuning
-best_score2 = np.mean(cross_val_score(rf, X_train, y_train, cv=3, scoring = scoring))
+best_score2 = np.mean(cross_val_score(rf, X_train_t, y_train, cv=3, scoring = scoring))
 best_params2 = rf.get_params()
 
 if best_score2 > best_score:
@@ -652,10 +664,10 @@ del best_params2
 
 ## training the final model with the best params
 rf_final = RandomForestClassifier(**best_params)
-rf_final.fit(X_train, y_train)
+rf_final.fit(X_train_t, y_train)
 
-y_train_pred  = make_predictions(rf_final, X_train, y_train)
-y_test_pred  = make_predictions(rf_final, X_test, y_test)
+y_train_pred  = make_predictions(rf_final, X_train_t, y_train)
+y_test_pred  = make_predictions(rf_final, X_test_t, y_test)
 
 metrics_train = evaluate_scores(y_train, y_train_pred)
 metrics_test = evaluate_scores(y_test, y_test_pred)
@@ -664,12 +676,12 @@ cm_train = evaluate_cmatrix(y_train, y_train_pred)
 cm_test = evaluate_cmatrix(y_test, y_test_pred)
 
 
+
 # saving the best parameters and model
 with open('./model/best_params_dict.pickle', 'wb') as handle:
     pickle.dump(best_params, handle, protocol = pickle.HIGHEST_PROTOCOL)
 
-pickle.dump(rf_final, open('./model/best_model_rf.sav', 'rb'))
-
+pickle.dump(rf_final, open('./model/best_model_rf.sav', 'wb'))
 
 print(metrics_train)
 print(metrics_test)
