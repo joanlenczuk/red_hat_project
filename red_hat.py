@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 import os
-import xgboost as xgb
 import pickle
 from sklearn.model_selection import cross_validate, train_test_split, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
@@ -13,8 +12,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, cross_val_predict, validation_curve
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, precision_recall_curve, roc_curve
-from sklearn.inspection import plot_partial_dependence
-from catboost import CatBoostClassifier
 from scipy.stats import chi2_contingency, pointbiserialr
 from category_encoders import TargetEncoder
 
