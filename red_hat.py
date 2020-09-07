@@ -295,7 +295,7 @@ def cramers_corr_features(df, cat_cols, thresh):
             if cramers_v > thresh:
                 print(f'{pair[0]} and {pair[1]} are associated: {round(cramers_v,2)}, dropping {pair[0]}')
                 # Only one of the correlated variables will be added to the list of correlated variables.
-                # The variable is picked randomly as additional calculations on such a big volume of data is to costly.
+                # The variable is picked randomly as additional calculations on such a big volume of data is too costly.
                 corr_features.append(pair[0])
             else:
                 pass
@@ -554,6 +554,7 @@ def evaluate_scores(y, y_pred, thresh=0.5):
     - a probability threshold for classification.
     
     It returns a dataframe with two columns: names of metrics (accuracy, precision, recall, f1, roc auc score) and scores.
+    It also returns a dataframe with the confusion matrix, where rows represent the actual class and columns represent the predicted class.
     """
     #creating a numpy array with predicted values of the target (0 or 1) based on the probability threshold
     y_pred_vals = (y_pred[:,1] >= thresh).astype('int')
@@ -568,22 +569,7 @@ def evaluate_scores(y, y_pred, thresh=0.5):
     metrics = pd.DataFrame({'metrics': ['accuracy', 'precision','recall','f1','roc_auc'],
                             'scores': [acc, prec, rec, f1, roc]})
     
-    return metrics
-
-
-
-def evaluate_cmatrix(y, y_pred, thresh = 0.5):
-    """
-    The function takes in:
-    - a numpy array with the true target values, 
-    - a numpy array with predicted probabilities of the target 
-    - a probability threshold for classification.
-    
-    It returns a dataframe with the confusion matrix, where rows represten the actual class and columns - predicted class.
-    """
-    #creating a numpy array with predicted values of the target (0 or 1) based on the probability threshold    
-    y_pred_vals = (y_pred[:,1] >= thresh).astype('int')
-    
+    #confusion matrix
     tn, fp, fn, tp = confusion_matrix(y, y_pred_vals).ravel()
     
     # PN - predicted negative, PP - predicted positive, TN - true negative, TP - true positive
@@ -591,7 +577,7 @@ def evaluate_cmatrix(y, y_pred, thresh = 0.5):
                             'PP':[fp, tp]},
                             index = ['TN','TP'])
     
-    return cmatrix
+    return metrics, cmatrix
 
 
 
@@ -611,7 +597,7 @@ def rf_best_params(X, y, random_seed, scoring,
             'min_samples_leaf': min_samples_leaf,
             'n_estimators': n_estimators}
     
-    rf_rsearch = RandomizedSearchCV(rf_def, param_distributions=grid, n_iter= 3, n_jobs=-1, cv = 3)
+    rf_rsearch = RandomizedSearchCV(rf_def, param_distributions=grid, n_iter=3, n_jobs=-1, cv=3)
     
     rf_rsearch.fit(X, y)
     
@@ -662,18 +648,15 @@ if best_score2 > best_score:
 rf_final = RandomForestClassifier(**best_params)
 rf_final.fit(X_train_t, y_train)
 
-y_train_pred  = make_predictions(rf_final, X_train_t, y_train)
-y_test_pred  = make_predictions(rf_final, X_test_t, y_test)
+y_train_pred = make_predictions(rf_final, X_train_t, y_train)
+y_test_pred = make_predictions(rf_final, X_test_t, y_test)
 
-metrics_train = evaluate_scores(y_train, y_train_pred)
-metrics_test = evaluate_scores(y_test, y_test_pred)
-
-cm_train = evaluate_cmatrix(y_train, y_train_pred)
-cm_test = evaluate_cmatrix(y_test, y_test_pred)
+metrics_train, cm_train = evaluate_scores(y_train, y_train_pred)
+metrics_test, cm_test = evaluate_scores(y_test, y_test_pred)
 
 
 
-#### SAVING MODEL AND BEST PARAMS
+#### SAVING THE MODEL AND THE BEST PARAMS
 
 with open('./model/best_params_dict.pickle', 'wb') as handle:
     pickle.dump(best_params, handle, protocol = pickle.HIGHEST_PROTOCOL)
