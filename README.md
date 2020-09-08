@@ -1,7 +1,7 @@
-### Predicting Red Hat Business Value
+## Predicting Red Hat Business Value
 
 
-#### Overview
+### Overview
 
 This project is inspired by a Kaggle competition available [here](https://www.kaggle.com/c/predicting-red-hat-business-value). 
 
@@ -10,7 +10,7 @@ The aim of the project is to explore data about people and their acitivities and
 The project was created for self-training purposes.
 
 
-#### Data
+### Data
 
 The data used in the project contains several files:
 - act_train.csv,
@@ -20,7 +20,7 @@ The data used in the project contains several files:
 Datasets act_train.csv and act_test.csv contain information about the activities and their characteristics, while people.csv consists of information about people performing those activities. The datasets are available on the website linked above.
 
 
-#### Project description
+### Project description
 
 The project consists of three parts split into three notebooks:
 - data_exploration_red_hat.ipynb,
